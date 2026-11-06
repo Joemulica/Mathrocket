@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Math Rocket</title>
+<meta name="description" content="Blast off with adding, subtracting, multiplying and dividing.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --sky1:#0b1036; --sky2:#1d2a6b; --card:#ffffffee; --ink:#1b1f3b;
+  --add:#ff8a3d; --sub:#2bb3ff; --mul:#9b5cff; --div:#22c27a;
+  --good:#22c27a; --bad:#ff5a6e; --gold:#ffc83d;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%}
+body{
+  font-family:"Baloo 2",system-ui,sans-serif;color:var(--ink);
+  background:radial-gradient(ellipse at 50% 120%,#3b2a7a 0%,var(--sky2) 40%,var(--sky1) 100%) fixed;
+  min-height:100vh;overflow-x:hidden;user-select:none;
+}
+#stars{position:fixed;inset:0;pointer-events:none;z-index:0}
+.star{position:absolute;background:#fff;border-radius:50%;animation:tw 3s infinite ease-in-out}
+@keyframes tw{50%{opacity:.25}}
+.wrap{position:relative;z-index:1;max-width:760px;margin:0 auto;padding:16px 16px 40px}
+header{display:flex;align-items:center;justify-content:space-between;gap:8px;color:#fff;margin-bottom:10px}
+.logo{font-weight:800;font-size:clamp(28px,7vw,44px);letter-spacing:.5px;text-shadow:0 3px 0 #0006;display:flex;align-items:center;gap:6px}
+.logo span{display:inline-block;animation:bob 2.4s infinite ease-in-out}
+@keyframes bob{50%{transform:translateY(-6px) rotate(-6deg)}}
+.pill{background:#ffffff22;color:#fff;border:2px solid #ffffff44;border-radius:999px;padding:4px 14px;font-weight:700;font-size:18px;white-space:nowrap}
+button{font-family:inherit;cursor:pointer;border:none}
+.screen{display:none}
+.screen.on{display:block;animation:pop .25s ease-out}
+@keyframes pop{from{transform:scale(.97);opacity:0}}
+.title{color:#fff;text-align:center;font-size:clamp(22px,5vw,30px);margin:8px 0 14px;text-shadow:0 2px 0 #0006}
+.ops{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.op{border-radius:24px;padding:18px 10px 14px;color:#fff;text-align:center;box-shadow:0 6px 0 #0005;transition:transform .1s}
+.op:active{transform:translateY(4px);box-shadow:0 2px 0 #0005}
+.op .sym{font-size:clamp(56px,16vw,84px);line-height:1;font-weight:800;text-shadow:0 3px 0 #0003}
+.op .nm{font-size:22px;font-weight:800}
+.op .st{font-size:16px;opacity:.95}
+.add{background:var(--add)}.sub{background:var(--sub)}.mul{background:var(--mul)}.div{background:var(--div)}
+.levels{display:grid;gap:12px}
+.lvl{display:flex;align-items:center;gap:14px;background:var(--card);border-radius:20px;padding:12px 16px;text-align:left;box-shadow:0 5px 0 #0004;font-size:20px;color:var(--ink)}
+.lvl:active{transform:translateY(3px);box-shadow:0 2px 0 #0004}
+.lvl .num{width:52px;height:52px;flex:none;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:800;font-size:26px}
+.lvl .d{flex:1;line-height:1.15}
+.lvl .d b{display:block;font-size:22px}
+.lvl .d small{font-size:16px;opacity:.7}
+.lvl .s{font-size:22px;letter-spacing:2px;white-space:nowrap}
+.lvl.locked{opacity:.5}
+.back{background:#ffffff22;color:#fff;border:2px solid #ffffff44;border-radius:14px;padding:6px 14px;font-size:18px;font-weight:700}
+/* game */
+.track{position:relative;height:56px;background:#ffffff18;border-radius:28px;margin:6px 0 14px;border:2px solid #ffffff33}
+.track .moon{position:absolute;right:6px;top:50%;transform:translateY(-50%);font-size:38px}
+.track .rk{position:absolute;left:4px;top:50%;transform:translateY(-50%) rotate(45deg);font-size:38px;transition:left .5s cubic-bezier(.3,1.4,.6,1)}
+.card{background:var(--card);border-radius:28px;padding:16px;box-shadow:0 8px 0 #0004;text-align:center}
+.prob{font-size:clamp(52px,15vw,92px);font-weight:800;line-height:1.1;display:flex;justify-content:center;align-items:center;gap:.25em;flex-wrap:wrap}
+.ans{min-width:1.6em;border-bottom:6px solid var(--ink);padding:0 .1em;color:var(--mul)}
+.ans.empty{color:#bbb}
+.card.ok{animation:okb .45s}.card.no{animation:shake .4s}
+@keyframes okb{40%{transform:scale(1.05);background:#d8ffe9}}
+@keyframes shake{20%,60%{transform:translateX(-10px)}40%,80%{transform:translateX(10px)}}
+.helper{min-height:10px;margin-top:6px;display:flex;flex-wrap:wrap;justify-content:center;gap:4px 14px;font-size:30px;line-height:1.1}
+.helper .grp{display:flex;flex-wrap:wrap;gap:2px;max-width:220px;justify-content:center}
+.helper .x{opacity:.25;text-decoration:line-through}
+.tools{display:flex;justify-content:center;gap:10px;margin-top:8px}
+.tbtn{background:#eef0ff;border-radius:14px;padding:6px 14px;font-size:18px;font-weight:700;color:var(--ink)}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+.key{background:#fff;border-radius:18px;font-size:clamp(30px,8vw,40px);font-weight:800;padding:10px 0;box-shadow:0 5px 0 #0004;color:var(--ink)}
+.key:active{transform:translateY(4px);box-shadow:0 1px 0 #0004}
+.key.go{background:var(--good);color:#fff}
+.key.del{background:#ffd9de}
+.msg{color:#fff;text-align:center;font-size:24px;font-weight:700;min-height:36px;margin-top:8px;text-shadow:0 2px 0 #0006}
+/* results */
+.big{font-size:clamp(60px,18vw,110px);text-align:center;line-height:1}
+.res-stars{font-size:clamp(48px,14vw,72px);text-align:center;letter-spacing:6px}
+.btns{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-top:16px}
+.btn{border-radius:18px;padding:12px 22px;font-size:22px;font-weight:800;color:#fff;box-shadow:0 5px 0 #0004}
+.btn:active{transform:translateY(3px);box-shadow:0 2px 0 #0004}
+.foot{color:#ffffff99;text-align:center;font-size:15px;margin-top:22px}
+.foot a{color:#ffffffcc}
+.confetti{position:fixed;top:-20px;font-size:28px;z-index:5;pointer-events:none;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(540deg)}}
+.blast{position:fixed;left:50%;bottom:-80px;font-size:80px;z-index:6;transform:translateX(-50%);animation:blast 1.6s ease-in forwards;pointer-events:none}
+@keyframes blast{to{bottom:120vh}}
+</style>
+</head>
+<body>
+<div id="stars"></div>
+<div class="wrap">
+  <header>
+    <div class="logo"><span>🚀</span>Math Rocket</div>
+    <div class="pill" id="totalStars">⭐ 0</div>
+  </header>
+
+  <!-- HOME -->
+  <section class="screen on" id="home">
+    <h2 class="title">Pick your mission!</h2>
+    <div class="ops" id="ops"></div>
+    <div class="foot">Also try <a href="https://wordrocket.net">Word Rocket</a> for reading 📚</div>
+  </section>
+
+  <!-- LEVELS -->
+  <section class="screen" id="levels">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <button class="back" onclick="go('home')">← Back</button>
+    </div>
+    <h2 class="title" id="lvTitle"></h2>
+    <div class="levels" id="lvList"></div>
+  </section>
+
+  <!-- GAME -->
+  <section class="screen" id="game">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+      <button class="back" onclick="quit()">← Quit</button>
+      <div class="pill" id="gLabel"></div>
+    </div>
+    <div class="track"><div class="rk" id="rk">🚀</div><div class="moon">🌕</div></div>
+    <div class="card" id="card">
+      <div class="prob"><span id="pA"></span><span id="pOp"></span><span id="pB"></span><span>=</span><span class="ans empty" id="pAns">?</span></div>
+      <div class="helper" id="helper"></div>
+      <div class="tools">
+        <button class="tbtn" id="hintBtn" onclick="showHint()">💡 Help</button>
+        <button class="tbtn" onclick="say()">🔊 Read it</button>
+      </div>
+    </div>
+    <div class="msg" id="msg"></div>
+    <div class="pad" id="pad"></div>
+  </section>
+
+  <!-- RESULTS -->
+  <section class="screen" id="results">
+    <div class="big" id="rEmoji">🌕</div>
+    <h2 class="title" id="rTitle"></h2>
+    <div class="res-stars" id="rStars"></div>
+    <div class="msg" id="rMsg"></div>
+    <div class="btns" id="rBtns"></div>
+  </section>
+</div>
+
+<script>
+// ---------- missions & levels ----------
+const R = (a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const OPS = {
+  add:{sym:'+',name:'Adding',cls:'add',color:'var(--add)',levels:[
+    {t:'Up to 5',     s:'1 + 3',   gen:()=>{const a=R(0,5),b=R(0,5-a);return[a,b]}},
+    {t:'Up to 10',    s:'4 + 6',   gen:()=>{const a=R(0,10),b=R(0,10-a);return[a,b]}},
+    {t:'Up to 20',    s:'8 + 7',   gen:()=>{const a=R(2,12),b=R(2,20-a);return[a,b]}},
+    {t:'Tens + ones', s:'30 + 4, 23 + 5', gen:()=>{if(Math.random()<.5){return[R(1,9)*10,R(1,9)]}const a=R(1,8)*10+R(0,8);return[a,R(1,9-(a%10))]}},
+    {t:'Big adding',  s:'27 + 15', gen:()=>{const a=R(10,79),b=R(5,99-a);return[a,b]}},
+  ]},
+  sub:{sym:'−',name:'Subtracting',cls:'sub',color:'var(--sub)',levels:[
+    {t:'From 5',      s:'5 − 2',   gen:()=>{const a=R(1,5);return[a,R(0,a)]}},
+    {t:'From 10',     s:'9 − 4',   gen:()=>{const a=R(3,10);return[a,R(0,a)]}},
+    {t:'From 20',     s:'15 − 7',  gen:()=>{const a=R(10,20);return[a,R(1,a-1)]}},
+    {t:'Take away tens',s:'60 − 20, 47 − 3',gen:()=>{if(Math.random()<.5){const a=R(3,9);return[a*10,R(1,a)*10]}const a=R(2,9)*10+R(1,9);return[a,R(1,a%10)]}},
+    {t:'Big subtracting',s:'52 − 18',gen:()=>{const a=R(30,99);return[a,R(9,a-5)]}},
+  ]},
+  mul:{sym:'×',name:'Multiplying',cls:'mul',color:'var(--mul)',levels:[
+    {t:'× 0, 1, 2',   s:'2 × 4',   gen:()=>pair(R(0,2),R(0,10))},
+    {t:'× 5 and 10',  s:'5 × 3',   gen:()=>pair([5,10][R(0,1)],R(0,10))},
+    {t:'× 3 and 4',   s:'4 × 6',   gen:()=>pair(R(3,4),R(0,10))},
+    {t:'Up to 10 × 10',s:'7 × 8',  gen:()=>[R(2,10),R(2,10)]},
+    {t:'Up to 12 × 12',s:'11 × 12',gen:()=>[R(2,12),R(2,12)]},
+  ]},
+  div:{sym:'÷',name:'Dividing',cls:'div',color:'var(--div)',levels:[
+    {t:'÷ 1 and 2',   s:'8 ÷ 2',   gen:()=>dv(R(1,2),10)},
+    {t:'÷ 5 and 10',  s:'30 ÷ 5',  gen:()=>dv([5,10][R(0,1)],10)},
+    {t:'÷ 3 and 4',   s:'12 ÷ 3',  gen:()=>dv(R(3,4),10)},
+    {t:'Up to 100 ÷ 10',s:'56 ÷ 7',gen:()=>dv(R(2,10),10)},
+    {t:'Up to 144 ÷ 12',s:'132 ÷ 11',gen:()=>dv(R(2,12),12)},
+  ]},
+};
+function pair(x,y){return Math.random()<.5?[x,y]:[y,x]}
+function dv(d,max){const q=R(1,max);return[d*q,d]}
+function solve(op,a,b){return op==='add'?a+b:op==='sub'?a-b:op==='mul'?a*b:a/b}
+const Q_PER_ROUND=10;
+
+// ---------- saved progress ----------
+let save={};
+try{save=JSON.parse(localStorage.getItem('mathrocket')||'{}')||{}}catch(e){save={}}
+function persist(){try{localStorage.setItem('mathrocket',JSON.stringify(save))}catch(e){}}
+const starsFor=(op,i)=>save[op+i]||0;
+function totalStars(){return Object.values(save).reduce((a,b)=>a+b,0)}
+function unlocked(op,i){return i===0||starsFor(op,i-1)>0}
+
+// ---------- screens ----------
+function go(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));
+  document.getElementById('totalStars').textContent='⭐ '+totalStars();window.scrollTo(0,0)}
+
+function drawHome(){
+  const el=document.getElementById('ops');el.innerHTML='';
+  for(const k in OPS){const o=OPS[k];
+    const got=o.levels.reduce((a,_,i)=>a+starsFor(k,i),0);
+    const b=document.createElement('button');b.className='op '+o.cls;
+    b.innerHTML=`<div class="sym">${o.sym}</div><div class="nm">${o.name}</div><div class="st">⭐ ${got} / ${o.levels.length*3}</div>`;
+    b.onclick=()=>{tap();openOp(k)};el.appendChild(b)}
+  go('home')
+}
+let cur={op:'add',lv:0};
+function openOp(k){cur.op=k;const o=OPS[k];
+  document.getElementById('lvTitle').textContent=o.sym+'  '+o.name+' Missions';
+  const el=document.getElementById('lvList');el.innerHTML='';
+  o.levels.forEach((L,i)=>{const s=starsFor(k,i),open=unlocked(k,i);
+    const b=document.createElement('button');b.className='lvl'+(open?'':' locked');
+    b.innerHTML=`<div class="num" style="background:${o.color}">${open?i+1:'🔒'}</div>
+      <div class="d"><b>${L.t}</b><small>like ${L.s}</small></div>
+      <div class="s">${'⭐'.repeat(s)}${'☆'.repeat(3-s)}</div>`;
+    b.onclick=()=>{if(!open){boop();return}tap();start(k,i)};el.appendChild(b)});
+  go('levels')
+}
+
+// ---------- game ----------
+let G=null;
+function start(op,lv){
+  cur={op,lv};const seen=new Set(),qs=[];let guard=0;
+  while(qs.length<Q_PER_ROUND&&guard++<500){const [a,b]=OPS[op].levels[lv].gen();const key=a+','+b;
+    if(seen.has(key)&&guard<200)continue;seen.add(key);qs.push([a,b])}
+  G={op,lv,qs,i:0,miss:0,input:'',triesThis:0,busy:false};
+  document.getElementById('gLabel').textContent=OPS[op].sym+' Level '+(lv+1);
+  buildPad();go('game');showQ()
+}
+function buildPad(){const p=document.getElementById('pad');p.innerHTML='';
+  [1,2,3,4,5,6,7,8,9,'⌫',0,'GO'].forEach(k=>{const b=document.createElement('button');
+    b.className='key'+(k==='GO'?' go':k==='⌫'?' del':'');b.textContent=k==='GO'?'Go!':k;
+    b.onclick=()=>press(k);p.appendChild(b)})}
+function showQ(){const [a,b]=G.qs[G.i];
+  document.getElementById('pA').textContent=a;document.getElementById('pB').textContent=b;
+  document.getElementById('pOp').textContent=OPS[G.op].sym;
+  G.input='';G.triesThis=0;G.busy=false;drawAns();
+  document.getElementById('helper').innerHTML='';document.getElementById('msg').textContent='';
+  document.getElementById('rk').style.left=`calc(${(G.i/Q_PER_ROUND)*100}% - ${(G.i/Q_PER_ROUND)*60}px + 4px)`;
+}
+function drawAns(){const e=document.getElementById('pAns');e.textContent=G.input||'?';e.classList.toggle('empty',!G.input)}
+function press(k){if(!G||G.busy)return;
+  if(k==='⌫'){G.input=G.input.slice(0,-1);tap()}
+  else if(k==='GO'){check();return}
+  else if(G.input.length<3){G.input=(G.input==='0'?'':G.input)+k;tap()}
+  drawAns()}
+function check(){if(!G.input){boop();return}
+  const [a,b]=G.qs[G.i],right=solve(G.op,a,b),card=document.getElementById('card');
+  card.classList.remove('ok','no');void card.offsetWidth;
+  if(+G.input===right){G.busy=true;card.classList.add('ok');ding();
+    document.getElementById('msg').textContent=cheer();
+    setTimeout(()=>{G.i++;if(G.i>=Q_PER_ROUND)finish();else showQ()},850)}
+  else{G.triesThis++;if(G.triesThis===1)G.miss++;card.classList.add('no');boop();
+    if(G.triesThis>=2){G.input=String(right);drawAns();G.busy=true;
+      document.getElementById('msg').textContent=`It's ${right}. You'll get the next one!`;showHint();
+      setTimeout(()=>{G.i++;if(G.i>=Q_PER_ROUND)finish();else showQ()},2600)}
+    else{document.getElementById('msg').textContent='Almost! Try again 💪';G.input='';drawAns()}}
+}
+const CHEERS=['Great job!','Blast off! 🚀','You got it!','Super!','Awesome!','Out of this world!','Nice!','Rocket power!'];
+function cheer(){return CHEERS[R(0,CHEERS.length-1)]}
+
+// help: counting pictures for small numbers, groups for × and ÷
+function showHint(){const [a,b]=G.qs[G.i],h=document.getElementById('helper'),op=G.op;
+  const dots=(n,c='⭐')=>`<div class="grp">${c.repeat(n)}</div>`;
+  if(op==='add'&&a+b<=20){h.innerHTML=dots(a,'🔴')+'<span>+</span>'+dots(b,'🔵')}
+  else if(op==='sub'&&a<=20){h.innerHTML=`<div class="grp">${'🍪'.repeat(a-b)}${'<span class="x">🍪</span>'.repeat(b)}</div>`}
+  else if(op==='mul'&&a*b<=40&&a>0&&b>0){const [g,n]=a<=b?[a,b]:[b,a];
+    h.innerHTML=Array.from({length:g},()=>dots(n,'🟣')).join('')}
+  else if(op==='div'&&a<=40){h.innerHTML=Array.from({length:b},()=>dots(a/b,'🟢')).join('')}
+  else{const tip={add:'Add the tens, then add the ones.',sub:'Take away the tens, then the ones.',
+      mul:`Think: ${Math.min(a,b)} groups of ${Math.max(a,b)}.`,div:`What times ${b} makes ${a}?`}[op];
+    h.innerHTML=`<span style="font-size:22px">${tip}</span>`}
+}
+function finish(){
+  const m=G.miss,stars=m===0?3:m<=2?2:m<=5?1:0,key=G.op+G.lv;
+  if(stars>(save[key]||0)){save[key]=stars;persist()}
+  document.getElementById('rk').style.left='calc(100% - 64px)';
+  document.getElementById('rEmoji').textContent=stars?'🌕':'🛰️';
+  document.getElementById('rTitle').textContent=stars===3?'Perfect landing!':stars?'You made it to the moon!':'Good try, astronaut!';
+  document.getElementById('rStars').textContent='⭐'.repeat(stars)+'☆'.repeat(3-stars);
+  document.getElementById('rMsg').textContent=`${Q_PER_ROUND-m} of ${Q_PER_ROUND} right on the first try`;
+  const btns=document.getElementById('rBtns');btns.innerHTML='';
+  const mk=(t,c,f)=>{const b=document.createElement('button');b.className='btn';b.style.background=c;b.textContent=t;b.onclick=f;btns.appendChild(b)};
+  mk('Play again','var(--sub)',()=>start(G.op,G.lv));
+  if(stars&&G.lv<OPS[G.op].levels.length-1)mk('Next level ➜','var(--good)',()=>start(G.op,G.lv+1));
+  mk('Missions','var(--mul)',()=>openOp(G.op));
+  go('results');if(stars){blast();confetti(stars*12);fanfare()}
+}
+function quit(){G=null;openOp(cur.op)}
+
+// keyboard support
+document.addEventListener('keydown',e=>{if(!document.getElementById('game').classList.contains('on'))return;
+  if(/^[0-9]$/.test(e.key))press(+e.key);else if(e.key==='Backspace')press('⌫');else if(e.key==='Enter')press('GO')});
+
+// read aloud
+function say(){if(!('speechSynthesis' in window)||!G)return;const [a,b]=G.qs[G.i];
+  const w={add:'plus',sub:'minus',mul:'times',div:'divided by'}[G.op];
+  speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(`What is ${a} ${w} ${b}?`);u.rate=.85;speechSynthesis.speak(u)}
+
+// ---------- sounds ----------
+let AC=null;
+function tone(f,d,type='sine',v=.15,when=0){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();
+  const o=AC.createOscillator(),g=AC.createGain(),t=AC.currentTime+when;o.type=type;o.frequency.value=f;
+  g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(g).connect(AC.destination);o.start(t);o.stop(t+d)}catch(e){}}
+const tap=()=>tone(600,.06,'triangle',.08);
+const ding=()=>{tone(880,.15);tone(1320,.25,'sine',.15,.1)};
+const boop=()=>tone(180,.25,'square',.06);
+const fanfare=()=>[523,659,784,1047].forEach((f,i)=>tone(f,.3,'triangle',.15,i*.13));
+
+// ---------- effects ----------
+function confetti(n){const c=['⭐','🌟','✨','🪐','🎉'];for(let i=0;i<n;i++){const d=document.createElement('div');d.className='confetti';
+  d.textContent=c[R(0,c.length-1)];d.style.left=R(0,100)+'vw';d.style.animationDuration=(R(15,30)/10)+'s';d.style.animationDelay=(R(0,8)/10)+'s';
+  document.body.appendChild(d);setTimeout(()=>d.remove(),4500)}}
+function blast(){const d=document.createElement('div');d.className='blast';d.textContent='🚀';document.body.appendChild(d);setTimeout(()=>d.remove(),1800)}
+(function(){const s=document.getElementById('stars');for(let i=0;i<70;i++){const e=document.createElement('div');e.className='star';
+  const z=Math.random()*2.5+1;e.style.cssText=`width:${z}px;height:${z}px;left:${Math.random()*100}%;top:${Math.random()*100}%;animation-delay:${Math.random()*3}s`;s.appendChild(e)}})();
+
+drawHome();
+</script>
+</body>
+</html>
